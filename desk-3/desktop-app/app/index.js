@@ -2,12 +2,19 @@ import { app, BrowserWindow } from "electron";
 
 function createWindow() {
     const window = new BrowserWindow({
-        height: 600,
-        width: 600,
+        title: "Groq Multi-LLM Studio",
+        height: 850,
+        width: 1280,
+        minWidth: 960,
+        minHeight: 650,
+        backgroundColor: '#09090b',
+        webPreferences: {
+            nodeIntegration: false,
+            contextIsolation: true
+        }
     })
 
     window.loadURL('http://localhost:5174/')
-    window.webContents.openDevTools();
 }
 
 app.whenReady().then(createWindow);

@@ -8,4 +8,9 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] })
   ],
+  envPrefix: ['VITE_', 'GROQ_'],
+  server: {
+    port: 5174,
+    host: true
+  }
 })
