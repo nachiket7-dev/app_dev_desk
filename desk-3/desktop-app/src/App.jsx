@@ -14,12 +14,36 @@ import { ChatHeader } from './components/ChatHeader';
 import { ChatMessage } from './components/ChatMessage';
 import { ChatInput } from './components/ChatInput';
 import { ModelHero } from './components/ModelHero';
+import { ShortcutsModal } from './components/ShortcutsModal';
 import './App.css';
 
 export default function App() {
   // Chat History & Sessions
   const [sessions, setSessions] = useState(getStoredSessions());
   const [activeSessionId, setActiveSessionId] = useState(getStoredActiveSessionId());
+
+  // Sidebar Collapse State
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('groq_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('groq_sidebar_collapsed', String(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  // Modals & Popovers
+  const [isModelSelectorOpen, setIsModelSelectorOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
   // Models State (Strictly Curated 5 Models)
   const [models] = useState(GROQ_MODELS);
@@ -69,6 +93,38 @@ export default function App() {
       if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
     };
   }, []);
+
+  // Global Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const isInputFocused = ['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName);
+
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        toggleSidebar();
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        handleNewChat();
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        setIsModelSelectorOpen((prev) => !prev);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const textarea = document.querySelector('.chat-textarea');
+        if (textarea) textarea.focus();
+      } else if (e.key === '?' && !isInputFocused) {
+        e.preventDefault();
+        setIsShortcutsOpen((prev) => !prev);
+      } else if (e.key === 'Escape') {
+        if (isStreaming) handleStopStreaming();
+        setIsModelSelectorOpen(false);
+        setIsShortcutsOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isStreaming]);
 
   // Save session helper
   const updateCurrentSession = (updatedMessages, modelId = activeModelId) => {
@@ -150,6 +206,15 @@ export default function App() {
     }
   };
 
+  // Rename Session
+  const handleRenameSession = (sessionId, newTitle) => {
+    const updated = sessions.map((s) =>
+      s.id === sessionId ? { ...s, title: newTitle, updatedAt: new Date().toISOString() } : s
+    );
+    setSessions(updated);
+    setStoredSessions(updated);
+  };
+
   // Clear All Sessions
   const handleClearAllSessions = () => {
     if (isStreaming) handleStopStreaming();
@@ -224,9 +289,11 @@ export default function App() {
   };
 
   // Send Message
-  const handleSendMessage = (overrideText) => {
+  const handleSendMessage = (overrideText, customBaseMessages) => {
     const text = (overrideText || input).trim();
     if (!text || isStreaming) return;
+
+    const baseMessages = customBaseMessages || messages;
 
     const userMessage = {
       id: `msg-${Date.now()}`,
@@ -235,7 +302,7 @@ export default function App() {
       timestamp: new Date().toISOString()
     };
 
-    const newMessages = [...messages, userMessage];
+    const newMessages = [...baseMessages, userMessage];
     setMessages(newMessages);
     setInput('');
     setIsStreaming(true);
@@ -260,16 +327,38 @@ export default function App() {
     // Start 60fps smooth typewriter ticker
     startSmoothStreaming(assistantMessageId);
 
+    // Sanitize conversation history for API:
+    // 1. Strip <think>...</think> from previous assistant messages so models don't rehash thoughts
+    // 2. Filter out error messages and blank messages
+    // 3. Keep the most recent 10 messages (5 turns) to prevent context dilution and repetition loops
+    const cleanedHistory = newMessages
+      .filter((m) => m && m.content && !m.content.startsWith('⚠️'))
+      .map((m) => {
+        let cleanContent = m.content;
+        if (m.role === 'assistant') {
+          cleanContent = cleanContent.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+        }
+        return {
+          role: m.role,
+          content: cleanContent
+        };
+      })
+      .filter((m) => m.content.length > 0)
+      .slice(-10);
+
     const apiMessages = [
       {
         role: 'system',
         content:
-          'You are an intelligent, articulate AI assistant powered by Groq high-speed LPU inference. Provide direct, helpful, and concise answers using clean markdown formatting.'
+          'You are an intelligent, articulate AI assistant powered by Groq high-speed LPU inference.\n\n' +
+          'CRITICAL CONVERSATIONAL RULES:\n' +
+          '1. Always respond directly, specifically, and immediately to the user\'s latest prompt.\n' +
+          '2. NEVER recap, summarize, repeat, or list previous queries or answers from earlier in this conversation unless the user explicitly asks for a summary or recap.\n' +
+          '3. Do NOT begin responses with conversational preambles like "In our previous turn", "Earlier you asked", "To recap our discussion", or "As discussed".\n' +
+          '4. Treat prior conversation history strictly as passive background context for understanding pronouns and context—never restate previous turns.\n' +
+          '5. Provide direct, clean markdown formatting without unnecessary filler.'
       },
-      ...newMessages.map((m) => ({
-        role: m.role,
-        content: m.content
-      }))
+      ...cleanedHistory
     ];
 
     abortControllerRef.current = new AbortController();
@@ -279,7 +368,6 @@ export default function App() {
       messages: apiMessages,
       signal: abortControllerRef.current.signal,
       onToken: (accumulated) => {
-        // Update target buffer without triggering synchronous state churn
         targetContentRef.current = accumulated;
       },
       onDone: (finalText) => {
@@ -306,6 +394,20 @@ export default function App() {
     });
   };
 
+  // Retry / Regenerate last response
+  const handleRetryPrompt = (assistantMsg) => {
+    if (isStreaming) return;
+    const assistantIdx = messages.findIndex((m) => m.id === assistantMsg.id);
+    if (assistantIdx <= 0) return;
+
+    const userMsg = messages[assistantIdx - 1];
+    if (!userMsg || userMsg.role !== 'user') return;
+
+    const truncated = messages.slice(0, assistantIdx - 1);
+    setMessages(truncated);
+    handleSendMessage(userMsg.content, truncated);
+  };
+
   // Stop Streaming
   const handleStopStreaming = () => {
     if (abortControllerRef.current) {
@@ -316,7 +418,6 @@ export default function App() {
       cancelAnimationFrame(rafIdRef.current);
       rafIdRef.current = null;
     }
-    // Flush current buffer immediately
     if (targetContentRef.current) {
       renderedContentRef.current = targetContentRef.current;
     }
@@ -325,6 +426,14 @@ export default function App() {
 
   return (
     <div className="app-layout">
+      {/* Ambient Atmospheric Nebula — 4 Drifting Orbs */}
+      <div className="ambient-glow-mesh" aria-hidden="true">
+        <div className="ambient-glow-top" />
+        <div className="ambient-glow-bottom" />
+        <div className="ambient-glow-left" />
+        <div className="ambient-glow-accent" />
+      </div>
+
       {/* Sidebar */}
       <Sidebar
         sessions={sessions}
@@ -332,7 +441,11 @@ export default function App() {
         onSelectSession={handleSelectSession}
         onNewChat={handleNewChat}
         onDeleteSession={handleDeleteSession}
+        onRenameSession={handleRenameSession}
         onClearAllSessions={handleClearAllSessions}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={toggleSidebar}
+        onOpenShortcuts={() => setIsShortcutsOpen(true)}
       />
 
       {/* Main Workspace */}
@@ -344,6 +457,10 @@ export default function App() {
           onClearChat={handleClearChat}
           messageCount={messages.length}
           sessionTitle={activeSession?.title}
+          isSidebarCollapsed={isSidebarCollapsed}
+          onToggleSidebar={toggleSidebar}
+          isModelSelectorOpen={isModelSelectorOpen}
+          onToggleModelSelector={setIsModelSelectorOpen}
         />
 
         {/* Scrollable Chat Area */}
@@ -363,13 +480,14 @@ export default function App() {
                   isStreaming={
                     isStreaming && idx === messages.length - 1 && msg.role === 'assistant'
                   }
+                  onRetryPrompt={handleRetryPrompt}
                 />
               ))}
             </div>
           )}
         </div>
 
-        {/* Bottom Input */}
+        {/* Bottom Floating Glass Input */}
         <ChatInput
           input={input}
           setInput={setInput}
@@ -377,8 +495,15 @@ export default function App() {
           onStopStreaming={handleStopStreaming}
           isStreaming={isStreaming}
           activeModel={activeModel}
+          onOpenModelSelector={() => setIsModelSelectorOpen(true)}
         />
       </main>
+
+      {/* Global Keyboard Shortcuts Modal */}
+      <ShortcutsModal
+        isOpen={isShortcutsOpen}
+        onClose={() => setIsShortcutsOpen(false)}
+      />
     </div>
   );
 }

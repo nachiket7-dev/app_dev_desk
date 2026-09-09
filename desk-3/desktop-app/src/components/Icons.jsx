@@ -128,3 +128,69 @@ export const EyeOffIcon = ({ size = 16, color = 'currentColor', className = '' }
     <line x1="1" y1="1" x2="23" y2="23" />
   </svg>
 );
+
+export const SidebarToggleIcon = ({ size = 16, color = 'currentColor', className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`app-icon ${className}`} style={{ minWidth: size, minHeight: size }}>
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+    <line x1="9" y1="3" x2="9" y2="21" />
+  </svg>
+);
+
+export const SearchIcon = ({ size = 14, color = 'currentColor', className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`app-icon ${className}`} style={{ minWidth: size, minHeight: size }}>
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
+
+export const EditIcon = ({ size = 13, color = 'currentColor', className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`app-icon ${className}`} style={{ minWidth: size, minHeight: size }}>
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+  </svg>
+);
+
+export const RotateCcwIcon = ({ size = 13, color = 'currentColor', className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`app-icon ${className}`} style={{ minWidth: size, minHeight: size }}>
+    <polyline points="1 4 1 10 7 10" />
+    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+  </svg>
+);
+
+export const ArrowRightIcon = ({ size = 14, color = 'currentColor', className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`app-icon ${className}`} style={{ minWidth: size, minHeight: size }}>
+    <line x1="5" y1="12" x2="19" y2="12" />
+    <polyline points="12 5 19 12 12 19" />
+  </svg>
+);
+
+export const BrainIcon = ({ size = 14, color = 'currentColor', className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`app-icon ${className}`} style={{ minWidth: size, minHeight: size }}>
+    <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04z" />
+    <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04z" />
+  </svg>
+);
+
+export const KeyboardIcon = ({ size = 14, color = 'currentColor', className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`app-icon ${className}`} style={{ minWidth: size, minHeight: size }}>
+    <rect x="2" y="4" width="20" height="16" rx="2" ry="2" />
+    <line x1="6" y1="8" x2="6.01" y2="8" />
+    <line x1="10" y1="8" x2="10.01" y2="8" />
+    <line x1="14" y1="8" x2="14.01" y2="8" />
+    <line x1="18" y1="8" x2="18.01" y2="8" />
+    <line x1="6" y1="12" x2="6.01" y2="12" />
+    <line x1="10" y1="12" x2="10.01" y2="12" />
+    <line x1="14" y1="12" x2="14.01" y2="12" />
+    <line x1="18" y1="12" x2="18.01" y2="12" />
+    <line x1="7" y1="16" x2="17" y2="16" />
+  </svg>
+);
+
+export const HelpCircleIcon = ({ size = 14, color = 'currentColor', className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`app-icon ${className}`} style={{ minWidth: size, minHeight: size }}>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
+  </svg>
+);
+

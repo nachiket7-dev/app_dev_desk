@@ -1,30 +1,50 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
 :root {
   /* Neutral Deep Zinc & Graphite Palette */
   --bg-app: #08080a;
   --bg-sidebar: #0e0e12;
   --bg-surface: #131317;
-  --bg-surface-hover: #1a1a21;
-  --bg-surface-active: #21212a;
-  --bg-input: #111115;
-  --bg-code: #0b0b0e;
+  --bg-surface-elevated: #18181f;
+  --bg-surface-hover: #1c1c24;
+  --bg-surface-active: #23232e;
+  --bg-input: #121217;
+  --bg-code: #0b0b0f;
 
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-medium: rgba(255, 255, 255, 0.1);
-  --border-focus: rgba(255, 255, 255, 0.22);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-medium: rgba(255, 255, 255, 0.09);
+  --border-highlight: rgba(255, 255, 255, 0.14);
+  --border-focus: rgba(249, 115, 22, 0.45);
 
-  --text-primary: #f4f4f6;
+  --text-primary: #f4f4f7;
   --text-secondary: #a1a1aa;
   --text-muted: #6b6b76;
-  --text-dim: #4b4b55;
+  --text-dim: #44444d;
 
   --accent-orange: #f97316;
+  --accent-orange-glow: rgba(249, 115, 22, 0.25);
   --accent-emerald: #10b981;
+  --accent-cyan: #38bdf8;
+  --accent-purple: #a855f7;
+  --accent-rose: #f43f5e;
 
-  /* Stylish Geometric Grotesque Typography */
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, Menlo, monospace;
+  /* Syntax Highlighting Palette */
+  --syn-keyword: #c084fc;
+  --syn-string: #86efac;
+  --syn-number: #fdba74;
+  --syn-function: #38bdf8;
+  --syn-comment: #71717a;
+  --syn-type: #e879f9;
+  --syn-operator: #f472b6;
+
+  /* Spring Motion Curve */
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-fast: 0.15s var(--ease-spring);
+  --transition-normal: 0.22s var(--ease-spring);
+
+  /* Modern High-Density Engineering Typography */
+  --font-sans: 'Geist', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Geist Mono', 'JetBrains Mono', 'SFMono-Regular', Consolas, Menlo, monospace;
 }
 
 * {
@@ -40,12 +60,15 @@ html, body {
   width: 100%;
   height: 100%;
   background-color: var(--bg-app);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 28px 28px;
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 13.5px;
   line-height: 1.6;
   letter-spacing: -0.012em;
   overflow: hidden;
+  user-select: text;
 }
 
 #root {
@@ -55,7 +78,13 @@ html, body {
   padding: 0;
   display: flex;
   overflow: hidden;
-  background-color: var(--bg-app);
+  /* transparent so the fixed glow behind body is visible */
+  background-color: transparent;
+}
+
+::selection {
+  background: rgba(249, 115, 22, 0.3);
+  color: #ffffff;
 }
 
 /* Minimalist Scrollbars */
@@ -74,7 +103,7 @@ html, body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.18);
 }
 
 button {
@@ -84,9 +113,134 @@ button {
   background: none;
   color: inherit;
   padding: 0;
+  transition: transform var(--transition-fast);
+}
+
+button:active {
+  transform: scale(0.972);
 }
 
 input, textarea {
   font-family: inherit;
   color: inherit;
 }
+
+/* =========================================================
+   AMBIENT NEBULA BACKGROUND — 4 Drifting Orbs
+   GPU-accelerated, zero JS, silky 60fps
+   ========================================================= */
+.ambient-glow-mesh {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* Orb 1 — Warm Amber/Orange, top-center */
+.ambient-glow-top {
+  position: absolute;
+  top: -200px;
+  left: calc(50% - 450px);
+  width: 900px;
+  height: 700px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(249, 115, 22, 0.32) 0%,
+    rgba(251, 146, 60, 0.18) 28%,
+    rgba(249, 115, 22, 0.06) 55%,
+    transparent 75%
+  );
+  filter: blur(70px);
+  will-change: transform, opacity;
+  animation: orb-drift-a 14s ease-in-out infinite alternate;
+}
+
+/* Orb 2 — Deep Cyan, bottom-right */
+.ambient-glow-bottom {
+  position: absolute;
+  bottom: -180px;
+  right: -80px;
+  width: 800px;
+  height: 700px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(56, 189, 248, 0.22) 0%,
+    rgba(14, 165, 233, 0.12) 35%,
+    rgba(56, 189, 248, 0.04) 60%,
+    transparent 78%
+  );
+  filter: blur(80px);
+  will-change: transform, opacity;
+  animation: orb-drift-b 18s ease-in-out infinite alternate-reverse;
+}
+
+/* Orb 3 — Rich Purple, left-center */
+.ambient-glow-left {
+  position: absolute;
+  top: 30%;
+  left: -180px;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(168, 85, 247, 0.18) 0%,
+    rgba(139, 92, 246, 0.09) 40%,
+    rgba(168, 85, 247, 0.02) 65%,
+    transparent 80%
+  );
+  filter: blur(90px);
+  will-change: transform, opacity;
+  animation: orb-drift-c 22s ease-in-out infinite alternate;
+}
+
+/* Orb 4 — Rose/Pink accent, top-right */
+.ambient-glow-accent {
+  position: absolute;
+  top: -100px;
+  right: 5%;
+  width: 550px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(244, 63, 94, 0.14) 0%,
+    rgba(251, 113, 133, 0.07) 40%,
+    rgba(244, 63, 94, 0.02) 65%,
+    transparent 80%
+  );
+  filter: blur(90px);
+  will-change: transform, opacity;
+  animation: orb-drift-d 26s ease-in-out infinite alternate-reverse;
+}
+
+/* Independent drift animations — each orb floats on its own path */
+@keyframes orb-drift-a {
+  0%   { transform: translate(0px, 0px) scale(0.92); opacity: 0.7; }
+  33%  { transform: translate(40px, 30px) scale(1.0); opacity: 1; }
+  66%  { transform: translate(-30px, 50px) scale(1.06); opacity: 0.85; }
+  100% { transform: translate(20px, -20px) scale(0.98); opacity: 0.95; }
+}
+
+@keyframes orb-drift-b {
+  0%   { transform: translate(0px, 0px) scale(1.0); opacity: 0.6; }
+  33%  { transform: translate(-50px, -40px) scale(0.94); opacity: 0.9; }
+  66%  { transform: translate(30px, -60px) scale(1.05); opacity: 0.75; }
+  100% { transform: translate(-20px, 25px) scale(0.97); opacity: 1; }
+}
+
+@keyframes orb-drift-c {
+  0%   { transform: translate(0px, 0px) scale(0.95); opacity: 0.55; }
+  50%  { transform: translate(60px, -80px) scale(1.08); opacity: 0.9; }
+  100% { transform: translate(30px, 60px) scale(1.0); opacity: 0.7; }
+}
+
+@keyframes orb-drift-d {
+  0%   { transform: translate(0px, 0px) scale(1.02); opacity: 0.5; }
+  40%  { transform: translate(-40px, 50px) scale(0.92); opacity: 0.85; }
+  100% { transform: translate(50px, 30px) scale(1.06); opacity: 0.65; }
+}
+
