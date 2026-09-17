@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Camera snapshots – never commit user captures
+app/user-camera-snap/
+
+# Env & local config
+.env
+.env.*
