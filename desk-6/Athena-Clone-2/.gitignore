@@ -4,8 +4,10 @@ node_modules/
 # Build output
 dist/
 
-# Camera snapshots – never commit user captures
-app/user-camera-snap/
+# Camera snapshots – ignore photos but keep the folder tracked
+app/user-camera-snap/*.jpg
+app/user-camera-snap/*.jpeg
+app/user-camera-snap/*.png
 
 # Env & local config
 .env
