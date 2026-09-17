@@ -7,6 +7,8 @@ function App() {
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [fullScreen, setFullScreen] = useState(false);
   const [timer, setTimer] = useState('');
+  const [cameraSaveFolder, setCameraSaveFolder] = useState('');
+  const [selectedFile, setSelectedFile] = useState('');
 
   // ref variables
   const videoRef = useRef(null);
@@ -159,6 +161,49 @@ function App() {
         <button onClick={() => { alert("Rules ...") }}>
           Show Chromium Rules
         </button>
+      </div>
+
+      {/* Task 1: Checkbox Dialog */}
+      <div style={{ marginTop: '10px' }}>
+        <button onClick={async () => {
+          const result = await window.athena.showCheckboxDialog();
+          if (result) {
+            const btn = ['Start Exam', 'More Info', 'Cancel'][result.buttonIndex];
+            alert(`Button: ${btn} | Checkbox: ${result.checkboxChecked ? 'Checked' : 'Unchecked'}`);
+          }
+        }}>
+          Show Checkbox Dialog
+        </button>
+      </div>
+
+      {/* Task 2 & 4: Select folder to save camera shots */}
+      <div style={{ marginTop: '10px' }}>
+        <button onClick={async () => {
+          const folder = await window.athena.selectCameraSaveFolder();
+          if (folder) setCameraSaveFolder(folder);
+        }}>
+          Select Camera Save Folder
+        </button>
+        {cameraSaveFolder && (
+          <p style={{ fontSize: '12px', marginTop: '4px' }}>
+            Saving to: <strong>{cameraSaveFolder}</strong>
+          </p>
+        )}
+      </div>
+
+      {/* Task 3: Select a file */}
+      <div style={{ marginTop: '10px' }}>
+        <button onClick={async () => {
+          const filePath = await window.athena.selectFile();
+          if (filePath) setSelectedFile(filePath);
+        }}>
+          Select File
+        </button>
+        {selectedFile && (
+          <p style={{ fontSize: '12px', marginTop: '4px' }}>
+            Selected: <strong>{selectedFile}</strong>
+          </p>
+        )}
       </div>
 
     </div>

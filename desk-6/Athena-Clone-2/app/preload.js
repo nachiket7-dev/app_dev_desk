@@ -40,5 +40,20 @@ contextBridge.exposeInMainWorld("athena", {
     // Functions related to showing Contest Rules in a new Dialog
     showRules: () => {
         ipcRenderer.send("show-rules");
+    },
+
+    // Task 1: Show checkbox dialog and get button + checkbox result
+    showCheckboxDialog: () => {
+        return ipcRenderer.invoke('show-checkbox-dialog');
+    },
+
+    // Task 2: Open folder picker and set camera save folder
+    selectCameraSaveFolder: () => {
+        return ipcRenderer.invoke('select-camera-save-folder');
+    },
+
+    // Task 3: Open file picker and get the selected file path
+    selectFile: () => {
+        return ipcRenderer.invoke('select-file');
     }
 })
