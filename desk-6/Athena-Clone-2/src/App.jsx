@@ -1,64 +1,62 @@
 // App.jsx
-import { useEffect, useRef, useState } from 'react'
-import './App.css'
+// Handles: OS theme detection, setup screen (camera + fullscreen), then renders MainExam.
+
+import { useEffect, useRef, useState } from 'react';
+import './App.css';
+import MainExam from './MainExam';
 
 function App() {
-  // state variables
+  const [view, setView] = useState('setup'); // 'setup' | 'exam'
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [fullScreen, setFullScreen] = useState(false);
   const [timer, setTimer] = useState('');
-  const [cameraSaveFolder, setCameraSaveFolder] = useState('');
-  const [selectedFile, setSelectedFile] = useState('');
-
-  // ref variables
   const videoRef = useRef(null);
 
-
+  // ─── Apply OS theme on mount and listen for changes
   useEffect(() => {
-    // Register Listener for handling Timer Tick from Main
-    const removeTimerTickListener = window.athena.registerListenerForTimerTickFromMain(setTimer);
+    async function applyTheme() {
+      const theme = await window.athena.getTheme();
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+    applyTheme();
 
-    // Register Listener for handling Camera Snap Request from Main
-    const removeCameraSnapListener = window.athena.registerListenerForCameraSnapFromMain(saveVideoScreenShots);
+    const removeThemeListener = window.athena.onThemeChange((theme) => {
+      document.documentElement.setAttribute('data-theme', theme);
+    });
 
+    return () => removeThemeListener();
+  }, []);
+
+  // ─── Register Electron IPC listeners
+  useEffect(() => {
+    const removeTimerListener = window.athena.registerListenerForTimerTickFromMain(setTimer);
+    const removeCameraListener = window.athena.registerListenerForCameraSnapFromMain(saveVideoScreenShots);
     return () => {
-      removeTimerTickListener()
-      removeCameraSnapListener()
+      removeTimerListener();
+      removeCameraListener();
     };
   }, []);
 
   async function saveVideoScreenShots() {
-    if (!videoRef.current || !videoRef.current.srcObject) {
-      return;
-    }
-
+    if (!videoRef.current || !videoRef.current.srcObject) return;
     try {
       const track = videoRef.current.srcObject.getVideoTracks()[0];
       if (!track) return;
-
-      // Use ImageCapture API
       const imageCapture = new ImageCapture(track);
       const blob = await imageCapture.takePhoto();
       const arrayBuffer = await blob.arrayBuffer();
-
-      // Send raw binary buffer to main process
       window.athena.storeCameraSnapImageOnDisk(arrayBuffer);
     } catch (error) {
-      console.error("Failed to capture image via ImageCapture:", error);
+      console.error('Failed to capture image:', error);
     }
   }
 
   async function getCameraAccess() {
     try {
-      const videoData = await navigator.mediaDevices.getUserMedia({
-        video: true
-      });
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = videoData
-      }
+      const videoData = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (videoRef.current) videoRef.current.srcObject = videoData;
       setCameraEnabled(true);
-    } catch (error) {
+    } catch {
       alert('Cannot access Camera');
     }
   }
@@ -67,17 +65,21 @@ function App() {
     try {
       await document.documentElement.requestFullscreen();
       setFullScreen(true);
-    } catch (error) {
+    } catch {
       alert('Cannot access full screen');
     }
   }
 
+  // ─── Render MainExam once setup is done
+  if (view === 'exam') {
+    return <MainExam />;
+  }
 
+  // ─── Setup View
   return (
     <div className="page-container">
-      {/* Main Card */}
       <div className="card-container">
-        {/* Section 1: Camera / Heimdall */}
+        {/* Camera */}
         <div className="permission-item">
           <div className="permission-content">
             <h3>Configure Camera</h3>
@@ -90,30 +92,21 @@ function App() {
               >
                 {cameraEnabled ? 'Camera Connected' : 'Get Camera Access'}
               </button>
-
-              {/* Hidden/Active Video Feed Preview */}
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                className={`video-preview`}
-              />
+              <video ref={videoRef} autoPlay playsInline className="video-preview" />
             </div>
           </div>
         </div>
 
         <div className="divider"></div>
 
-        {/* Section 2: Fullscreen */}
+        {/* Fullscreen */}
         <div className="permission-item">
           <div className="permission-content">
-            <h3>Switch to full screen</h3>
+            <h3>Switch to Full Screen</h3>
             <button
               className="btn btn-primary"
               disabled={fullScreen}
-              onClick={() => {
-                enableFullScreen();
-              }}
+              onClick={enableFullScreen}
             >
               {fullScreen ? 'Full Screen Enabled' : 'Give Full Screen Permissions'}
             </button>
@@ -121,93 +114,27 @@ function App() {
         </div>
       </div>
 
-      {/* Bottom Action Buttons */}
+      {/* Go To Test */}
       <div className="bottom-actions">
         <button
           className="btn btn-primary"
           disabled={!cameraEnabled || !fullScreen}
           onClick={async () => {
-            try {
-              const response = await window.athena.startTimerOnMain();
-            } catch (error) {
-
-            }
+            try { await window.athena.startTimerOnMain(); } catch {}
+            setView('exam');
           }}
         >
           Go To Test
         </button>
       </div>
 
-      <div>
-        {timer + ' (s) elapsed'}
-      </div>
-
-      <div>
-        <button onClick={() => {
-          saveVideoScreenShots()
-        }}>
-          saveVideoScreenShots
-        </button>
-      </div>
-
-
-      <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-        <button onClick={() => {
-          window.athena.showRules()
-        }}>
-          Show Native Rules
-        </button>
-
-        <button onClick={() => { alert("Rules ...") }}>
-          Show Chromium Rules
-        </button>
-      </div>
-
-      {/* Task 1: Checkbox Dialog */}
-      <div style={{ marginTop: '10px' }}>
-        <button onClick={async () => {
-          const result = await window.athena.showCheckboxDialog();
-          if (result) {
-            const btn = ['Start Exam', 'More Info', 'Cancel'][result.buttonIndex];
-            alert(`Button: ${btn} | Checkbox: ${result.checkboxChecked ? 'Checked' : 'Unchecked'}`);
-          }
-        }}>
-          Show Checkbox Dialog
-        </button>
-      </div>
-
-      {/* Task 2 & 4: Select folder to save camera shots */}
-      <div style={{ marginTop: '10px' }}>
-        <button onClick={async () => {
-          const folder = await window.athena.selectCameraSaveFolder();
-          if (folder) setCameraSaveFolder(folder);
-        }}>
-          Select Camera Save Folder
-        </button>
-        {cameraSaveFolder && (
-          <p style={{ fontSize: '12px', marginTop: '4px' }}>
-            Saving to: <strong>{cameraSaveFolder}</strong>
-          </p>
-        )}
-      </div>
-
-      {/* Task 3: Select a file */}
-      <div style={{ marginTop: '10px' }}>
-        <button onClick={async () => {
-          const filePath = await window.athena.selectFile();
-          if (filePath) setSelectedFile(filePath);
-        }}>
-          Select File
-        </button>
-        {selectedFile && (
-          <p style={{ fontSize: '12px', marginTop: '4px' }}>
-            Selected: <strong>{selectedFile}</strong>
-          </p>
-        )}
-      </div>
-
+      {timer !== '' && (
+        <div className="muted" style={{ marginTop: '8px', fontSize: '13px' }}>
+          {timer} (s) elapsed
+        </div>
+      )}
     </div>
   );
 }
 
-export default App
+export default App;

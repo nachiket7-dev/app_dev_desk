@@ -1,0 +1,100 @@
+[
+  {
+    "sessionId": "session-1789978099140",
+    "userId": "student-1",
+    "name": "Nachiket Amlekar",
+    "startedAt": "2026-09-21T08:08:19.140Z",
+    "submittedAt": "2026-09-21T08:09:06.709Z",
+    "status": "submitted",
+    "attempted": 5,
+    "correct": 5,
+    "wrong": 0,
+    "answers": [
+      {
+        "questionId": 1,
+        "selectedAnswer": 1,
+        "isCorrect": true,
+        "answeredAt": "2026-09-21T08:08:42.249Z"
+      },
+      {
+        "questionId": 2,
+        "selectedAnswer": 0,
+        "isCorrect": true,
+        "answeredAt": "2026-09-21T08:08:50.076Z"
+      },
+      {
+        "questionId": 3,
+        "selectedAnswer": 1,
+        "isCorrect": true,
+        "answeredAt": "2026-09-21T08:08:52.481Z"
+      },
+      {
+        "questionId": 4,
+        "selectedAnswer": 0,
+        "isCorrect": true,
+        "answeredAt": "2026-09-21T08:08:57.140Z"
+      },
+      {
+        "questionId": 5,
+        "selectedAnswer": 1,
+        "isCorrect": true,
+        "answeredAt": "2026-09-21T08:09:04.217Z"
+      }
+    ]
+  },
+  {
+    "sessionId": "session-1789979321114",
+    "userId": "student-2",
+    "name": "Nachiket",
+    "startedAt": "2026-09-21T08:28:41.114Z",
+    "submittedAt": "2026-09-21T08:29:10.766Z",
+    "status": "submitted",
+    "attempted": 5,
+    "correct": 5,
+    "wrong": 0,
+    "answers": [
+      {
+        "questionId": 1,
+        "selectedAnswer": 1,
+        "isCorrect": true,
+        "answeredAt": "2026-09-21T08:28:45.406Z"
+      },
+      {
+        "questionId": 2,
+        "selectedAnswer": 0,
+        "isCorrect": true,
+        "answeredAt": "2026-09-21T08:28:53.449Z"
+      },
+      {
+        "questionId": 3,
+        "selectedAnswer": 1,
+        "isCorrect": true,
+        "answeredAt": "2026-09-21T08:29:02.351Z"
+      },
+      {
+        "questionId": 4,
+        "selectedAnswer": 0,
+        "isCorrect": true,
+        "answeredAt": "2026-09-21T08:29:05.902Z"
+      },
+      {
+        "questionId": 5,
+        "selectedAnswer": 1,
+        "isCorrect": true,
+        "answeredAt": "2026-09-21T08:29:10.066Z"
+      }
+    ]
+  },
+  {
+    "sessionId": "session-1789999873536",
+    "userId": "student-101",
+    "name": "Test",
+    "startedAt": "2026-09-21T14:11:13.536Z",
+    "submittedAt": null,
+    "status": "in-progress",
+    "attempted": 0,
+    "correct": 0,
+    "wrong": 0,
+    "answers": []
+  }
+]

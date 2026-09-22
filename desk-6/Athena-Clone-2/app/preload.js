@@ -55,5 +55,17 @@ contextBridge.exposeInMainWorld("athena", {
     // Task 3: Open file picker and get the selected file path
     selectFile: () => {
         return ipcRenderer.invoke('select-file');
+    },
+
+    // Native theme: get current OS theme ('dark' | 'light')
+    getTheme: () => {
+        return ipcRenderer.invoke('get-theme');
+    },
+
+    // Native theme: listen for OS theme changes
+    onThemeChange: (callback) => {
+        const fn = (_event, theme) => callback(theme);
+        ipcRenderer.on('theme-changed', fn);
+        return () => ipcRenderer.removeListener('theme-changed', fn);
     }
 })

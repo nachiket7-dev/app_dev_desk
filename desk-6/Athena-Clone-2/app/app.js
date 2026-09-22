@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, nativeTheme } from "electron";
 import path from "path";
 import fs from "fs";
 
@@ -16,7 +16,12 @@ function createWindow() {
         }
     })
 
-    electronWindow.loadURL('http://localhost:5173')
+    electronWindow.loadURL('http://localhost:5174');
+
+    // Push OS theme changes to the renderer
+    nativeTheme.on('updated', () => {
+        electronWindow.webContents.send('theme-changed', nativeTheme.shouldUseDarkColors ? 'dark' : 'light');
+    });
 }
 
 ipcMain.handle('start-timer', (event) => {
@@ -46,6 +51,13 @@ ipcMain.handle('store-camera-snap-image-on-disk', (_event, data) => {
     const filePath = path.join(saveDir, `${Date.now()}.jpg`);
     fs.writeFileSync(filePath, Buffer.from(data));
 })
+
+
+
+// Native theme: return current OS theme to renderer on request
+ipcMain.handle('get-theme', () => {
+    return nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
+});
 
 
 ipcMain.on("show-rules", () => {
