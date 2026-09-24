@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, nativeTheme } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, nativeTheme, desktopCapturer } from "electron";
 import path from "path";
 import fs from "fs";
 
@@ -36,6 +36,11 @@ ipcMain.handle('start-timer', (event) => {
     setInterval(() => {
         electronWindow.webContents.send('camera-shot')
     }, 5000);
+
+    // Capture screen snap every 10s
+    setInterval(() => {
+        electronWindow.webContents.send('screen-shot');
+    }, 10000);
 })
 
 
@@ -52,6 +57,22 @@ ipcMain.handle('store-camera-snap-image-on-disk', (_event, data) => {
     fs.writeFileSync(filePath, Buffer.from(data));
 })
 
+
+
+// Screen capture: return the first screen's source ID to the renderer
+ipcMain.handle('get-screen-source', async () => {
+    const sources = await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: 0, height: 0 } });
+    return sources[0]?.id ?? null;
+});
+
+
+// Screen capture: save screenshot to disk
+ipcMain.handle('store-screen-snap-image-on-disk', (_event, data) => {
+    const saveDir = path.join(import.meta.dirname, 'user-screen-snap');
+    if (!fs.existsSync(saveDir)) fs.mkdirSync(saveDir, { recursive: true });
+    const filePath = path.join(saveDir, `${Date.now()}.jpg`);
+    fs.writeFileSync(filePath, Buffer.from(data));
+});
 
 
 // Native theme: return current OS theme to renderer on request

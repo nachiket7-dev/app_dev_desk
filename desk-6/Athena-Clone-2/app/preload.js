@@ -67,5 +67,21 @@ contextBridge.exposeInMainWorld("athena", {
         const fn = (_event, theme) => callback(theme);
         ipcRenderer.on('theme-changed', fn);
         return () => ipcRenderer.removeListener('theme-changed', fn);
+    },
+
+    // Screen capture: get the desktop source ID from main
+    getScreenSource: () => {
+        return ipcRenderer.invoke('get-screen-source');
+    },
+
+    // Screen capture: listen for screen-shot trigger from main
+    registerListenerForScreenShotFromMain: (callback) => {
+        ipcRenderer.on('screen-shot', callback);
+        return () => ipcRenderer.removeListener('screen-shot', callback);
+    },
+
+    // Screen capture: save screenshot to disk via main
+    storeScreenSnapImageOnDisk: (data) => {
+        ipcRenderer.invoke('store-screen-snap-image-on-disk', data);
     }
 })

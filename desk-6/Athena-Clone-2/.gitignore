@@ -9,6 +9,11 @@ app/user-camera-snap/*.jpg
 app/user-camera-snap/*.jpeg
 app/user-camera-snap/*.png
 
+# Screen snapshots – ignore screenshots but keep the folder tracked
+app/user-screen-snap/*.jpg
+app/user-screen-snap/*.jpeg
+app/user-screen-snap/*.png
+
 # Env & local config
 .env
 .env.*
